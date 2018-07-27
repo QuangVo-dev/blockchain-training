@@ -8,6 +8,7 @@ const express = require('express')
 const parser = require('body-parser')
 const request = require('request')
 const axios = require('axios')
+const pem = require('pem')
 
 const lastOf = list => list[list.length - 1]
 
@@ -96,7 +97,7 @@ class Server {
     this.peerServer.setBroadcast(true)
     const address = this.peerServer.address()
     console.info(
-      `Peer discovery server started at ${address.address}:${address.port}.`
+      `Peer discovery server s  tarted at ${address.address}:${address.port}.`
     )
 
     setInterval(() => {
@@ -105,7 +106,7 @@ class Server {
       })
     }, 1000)
 
-    // TODO: broadcast the message to all the peers
+      // TODO: broadcast the message to all the peers
   };
 
   onPeerMessage(message, remote) {
@@ -226,22 +227,14 @@ class Server {
     // TODO
     // - Generate key pair based on password
     // - resonse
-    // var input = req.body.password
-    var input = req.body.password
-    var password = crypto.createHmac('sha1', input).digest('hex');
-    let diffHell = crypto.createDiffieHellman(password)
-    diffHell.generateKeys('hex');
-    publicKey = diffHell.getPublicKey('hex')
-
-    this.state[diffHell.getPublicKey('hex')] = 100
-    console.log(this.state)
-    this.peerServer.send(`Account address_${publicKey}`,2346, '255.255.255.255', (err) => {
-      if(err) {
-        console.log(err)
-      }
-      console.log('Account created')
+    // var input = req.body.password\
+    console.log(req.body)
+    pem.createPrivateKey(128, { password: req.body.password }, (err, privateKey) => {
+      console.log(privateKey)
+      pem.getPublicKey(privateKey.key, (error, publicKey) => {
+        res.json({ privateKey: privateKey.key, publicKey: publicKey.publicKey })
+      })
     })
-    return res.send(`Wallet: ${diffHell.getPublicKey('hex')} Private Key ${diffHell.getPrivateKey('hex')}`)
   }
 
 }
